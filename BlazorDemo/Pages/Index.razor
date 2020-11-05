@@ -1,4 +1,6 @@
 ﻿@page "/"
+@using BlazorDemoML.Model
+@using System.IO
 
 <h3>Upload PNG images</h3>
 
@@ -18,10 +20,23 @@
             }
         </div>
     </div>
+
+    <div>
+        @result.Prediction
+    </div>
+
+    <div>
+        @foreach (var score in result.Score)
+        {
+            <p>@score</p>
+        }
+    </div>
 }
 
 @code {
     IList<string> imageDataUrls = new List<string>();
+    List<ModelOutput> results = new();
+    ModelOutput result;
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
@@ -37,6 +52,13 @@
             var imageDataUrl =
                 $"data:{format};base64,{Convert.ToBase64String(buffer)}";
             imageDataUrls.Add(imageDataUrl);
+
+            File.WriteAllBytes("D://repos/BlazorDemo/temp.jpg", buffer);
         }
+
+        var service = new FlowerRecognitionService();
+        var pictureUrl = imageDataUrls.FirstOrDefault();
+
+        result = await service.GetFlowerNameAsync("D://repos/BlazorDemo/temp.jpg");
     }
 }

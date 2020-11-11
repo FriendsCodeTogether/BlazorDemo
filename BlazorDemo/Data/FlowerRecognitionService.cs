@@ -7,7 +7,7 @@ namespace BlazorDemo.Data
 {
     public class FlowerRecognitionService
     {
-        public async Task<ModelOutput> GetFlowerNameAsync(string imageUrl)
+        public ModelOutput GetFlowerName(string imageUrl)
         {
             ModelInput sampleData = new ModelInput()
             {

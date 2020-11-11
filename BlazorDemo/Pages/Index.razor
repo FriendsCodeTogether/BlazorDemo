@@ -1,64 +1,66 @@
 ﻿@page "/"
 @using BlazorDemoML.Model
+@using System.Linq
 @using System.IO
 
-<h3>Upload PNG images</h3>
+<h2>Upload a flower image</h2>
 
 <p>
-    <InputFile OnChange="@OnInputFileChange" multiple />
+    <InputFile OnChange="@OnInputFileChange" />
 </p>
 
-@if (imageDataUrls.Count > 0)
+@if (processing)
 {
-    <h4>Images</h4>
+    <p>Thinking about it...</p>
+}
 
-    <div class="card" style="width:30rem;">
+@if (imageDataUrl != null)
+{
+    <h4>Image</h4>
+
+    <div class="card" style="width:9rem;">
         <div class="card-body">
-            @foreach (var imageDataUrl in imageDataUrls)
-            {
-                <img class="rounded m-1" src="@imageDataUrl" />
-            }
+            <img class="rounded" src="@imageDataUrl" />
         </div>
     </div>
+    if (prediction != null && score != null)
+    {
+        <div>
+            It looks like your flower is a @prediction
+        </div>
 
-    <div>
-        @result.Prediction
-    </div>
-
-    <div>
-        @foreach (var score in result.Score)
-        {
-            <p>@score</p>
-        }
-    </div>
+        <div>
+            <p>We are @score certain of this.</p>
+        </div>
+    }
 }
 
 @code {
-    IList<string> imageDataUrls = new List<string>();
-    List<ModelOutput> results = new();
-    ModelOutput result;
+    string imageDataUrl;
+    string prediction;
+    string score;
+    bool processing;
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
     {
-        var maxAllowedFiles = 3;
+        processing = true;
+        var imageFile = e.File;
         var format = "image/jpg";
+        var resizedImageFile = await imageFile.RequestImageFileAsync(format, 100, 100);
+        var buffer = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream().ReadAsync(buffer);
+        imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
 
-        foreach (var imageFile in e.GetMultipleFiles(maxAllowedFiles))
-        {
-            var resizedImageFile = await imageFile.RequestImageFileAsync(format,
-                100, 100);
-            var buffer = new byte[resizedImageFile.Size];
-            await resizedImageFile.OpenReadStream().ReadAsync(buffer);
-            var imageDataUrl =
-                $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-            imageDataUrls.Add(imageDataUrl);
-
-            File.WriteAllBytes("D://repos/BlazorDemo/temp.jpg", buffer);
-        }
+        File.WriteAllBytes("temp.jpg", buffer);
 
         var service = new FlowerRecognitionService();
-        var pictureUrl = imageDataUrls.FirstOrDefault();
 
-        result = await service.GetFlowerNameAsync("D://repos/BlazorDemo/temp.jpg");
+        var result = service.GetFlowerName("temp.jpg");
+
+        prediction = result?.Prediction;
+        var numericScore = (int)(result.Score.Max() * 100);
+
+        score = $"{numericScore}%";
+        processing = false;
     }
 }

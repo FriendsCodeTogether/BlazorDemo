@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorDemo.Data;
+using Microsoft.Extensions.ML;
+using BlazorDemo.MLModels;
 
 namespace BlazorDemo
 {
@@ -28,7 +30,15 @@ namespace BlazorDemo
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+            services.AddScoped<WeatherForecastService>();
+
+            services.AddPredictionEnginePool<FlowerRecognitionInput, FlowerRecognitionOutput>()
+                    .FromFile(Configuration["MLModel:FlowerRecognitionModelFilePath"]);
+            services.AddPredictionEnginePool<SentimentAnalysisInput, SentimentAnalysisOutput>()
+                    .FromFile(Configuration["MLModel:SentimentAnalysisModelFilePath"]);
+
+            services.AddScoped<FlowerRecognitionService>();
+            services.AddScoped<SentimentAnalysisService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +55,8 @@ namespace BlazorDemo
                 app.UseHsts();
             }
 
+            WarmUpMLModels(app);
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -55,6 +67,12 @@ namespace BlazorDemo
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+        }
+
+        private static void WarmUpMLModels(IApplicationBuilder app)
+        {
+            _ = app.ApplicationServices.GetService<PredictionEnginePool<FlowerRecognitionInput, FlowerRecognitionOutput>>();
+            _ = app.ApplicationServices.GetService<PredictionEnginePool<SentimentAnalysisInput, SentimentAnalysisOutput>>();
         }
     }
 }

@@ -2,9 +2,9 @@
 
 using Microsoft.ML.Data;
 
-namespace BlazorDemoML.Model
+namespace BlazorDemo.MLModels
 {
-    public class ModelInput
+    public class SentimentAnalysisInput
     {
         [ColumnName("col0"), LoadColumn(0)]
         public string Text { get; set; }

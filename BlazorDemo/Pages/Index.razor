@@ -1,66 +1,9 @@
 ﻿@page "/"
-@using BlazorDemoML.Model
-@using System.Linq
-@using System.IO
 
-<h2>Upload a flower image</h2>
-
-<p>
-    <InputFile OnChange="@OnInputFileChange" />
-</p>
-
-@if (processing)
-{
-    <p>Thinking about it...</p>
-}
-
-@if (imageDataUrl != null)
-{
-    <h4>Image</h4>
-
-    <div class="card" style="width:9rem;">
-        <div class="card-body">
-            <img class="rounded" src="@imageDataUrl" />
-        </div>
-    </div>
-    if (prediction != null && score != null)
-    {
-        <div>
-            It looks like your flower is a @prediction
-        </div>
-
-        <div>
-            <p>We are @score certain of this.</p>
-        </div>
-    }
-}
+<h1>Welcome to our BlazorDemo</h1>
+<br/>
+<h5>Today we will be showing you Blazor and ML.NET</h5>
 
 @code {
-    string imageDataUrl;
-    string prediction;
-    string score;
-    bool processing;
 
-    private async Task OnInputFileChange(InputFileChangeEventArgs e)
-    {
-        processing = true;
-        var imageFile = e.File;
-        var format = "image/jpg";
-        var resizedImageFile = await imageFile.RequestImageFileAsync(format, 100, 100);
-        var buffer = new byte[resizedImageFile.Size];
-        await resizedImageFile.OpenReadStream().ReadAsync(buffer);
-        imageDataUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
-
-        File.WriteAllBytes("temp.jpg", buffer);
-
-        var service = new FlowerRecognitionService();
-
-        var result = service.GetFlowerName("temp.jpg");
-
-        prediction = result?.Prediction;
-        var numericScore = (int)(result.Score.Max() * 100);
-
-        score = $"{numericScore}%";
-        processing = false;
-    }
 }

@@ -3,9 +3,9 @@
 using System;
 using Microsoft.ML.Data;
 
-namespace BlazorDemoML.Model
+namespace BlazorDemo.MLModels
 {
-    public class ModelOutput
+    public class SentimentAnalysisOutput
     {
         // ColumnName attribute is used to change the column name from
         // its default value, which is the name of the field.

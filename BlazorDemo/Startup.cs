@@ -34,11 +34,10 @@ namespace BlazorDemo
 
             services.AddPredictionEnginePool<FlowerRecognitionInput, FlowerRecognitionOutput>()
                     .FromFile(Configuration["MLModel:FlowerRecognitionModelFilePath"]);
-            services.AddPredictionEnginePool<SentimentAnalysisInput, SentimentAnalysisOutput>()
-                    .FromFile(Configuration["MLModel:SentimentAnalysisModelFilePath"]);
+            // services.AddPredictionEnginePool<SentimentAnalysisInput, SentimentAnalysisOutput>()
+            //         .FromFile(Configuration["MLModel:SentimentAnalysisModelFilePath"]);
 
             services.AddScoped<FlowerRecognitionService>();
-            services.AddScoped<SentimentAnalysisService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,7 +54,7 @@ namespace BlazorDemo
                 app.UseHsts();
             }
 
-            WarmUpMLModels(app);
+            // WarmUpMLModels(app);
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
